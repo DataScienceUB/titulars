@@ -1,0 +1,1538 @@
+<!DOCTYPE html>
+<html lang="ca">
+
+<head>
+  <meta charset="UTF-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1.0">
+  <title>Observatori d'anàlisi editorial</title>
+  <style>
+    *,
+    *::before,
+    *::after {
+      box-sizing: border-box;
+      margin: 0;
+      padding: 0;
+    }
+
+    :root {
+      --bg: #ffffff;
+      --bg-2: #f5f5f3;
+      --bg-3: #eeede9;
+      --bg-info: #e6f1fb;
+      --bg-warn: #fff4ea;
+      --text: #1a1a18;
+      --text-2: #5a5a57;
+      --text-3: #9a9a96;
+      --border: rgba(0, 0, 0, 0.10);
+      --border-2: rgba(0, 0, 0, 0.18);
+      --radius: 8px;
+      --radius-lg: 12px;
+      --font: -apple-system, 'Helvetica Neue', Arial, sans-serif;
+      --mono: 'SF Mono', 'Fira Code', 'Cascadia Code', monospace;
+    }
+
+    @media (prefers-color-scheme: dark) {
+      :root {
+        --bg: #1c1c1a;
+        --bg-2: #252522;
+        --bg-3: #2e2e2b;
+        --bg-info: #0c2d4a;
+        --bg-warn: #3a2a1a;
+        --text: #f0ede6;
+        --text-2: #a8a8a4;
+        --text-3: #606060;
+        --border: rgba(255, 255, 255, 0.10);
+        --border-2: rgba(255, 255, 255, 0.18);
+      }
+    }
+
+    body {
+      font-family: var(--font);
+      background: var(--bg-3);
+      color: var(--text);
+      font-size: 14px;
+      line-height: 1.5;
+      min-height: 100vh;
+    }
+
+    .nav {
+      background: var(--bg);
+      border-bottom: 0.5px solid var(--border);
+      padding: 0 1.5rem;
+      height: 56px;
+      display: flex;
+      align-items: center;
+      justify-content: space-between;
+      position: sticky;
+      top: 0;
+      z-index: 100;
+    }
+
+    .nav-brand {
+      display: flex;
+      align-items: center;
+      gap: 10px;
+    }
+
+    .nav-logo {
+      width: 28px;
+      height: 28px;
+      background: var(--text);
+      border-radius: 6px;
+      display: flex;
+      align-items: center;
+      justify-content: center;
+    }
+
+    .nav-logo svg {
+      color: var(--bg);
+    }
+
+    .nav-title {
+      font-size: 14px;
+      font-weight: 600;
+      color: var(--text);
+    }
+
+    .nav-sub {
+      font-size: 11px;
+      color: var(--text-3);
+      font-family: var(--mono);
+      margin-top: 1px;
+    }
+
+    .nav-right {
+      display: flex;
+      align-items: center;
+      gap: 8px;
+    }
+
+    .nav-meta {
+      font-size: 11px;
+      color: var(--text-3);
+      font-family: var(--mono);
+    }
+
+    .btn {
+      font-size: 12px;
+      padding: 6px 12px;
+      border-radius: var(--radius);
+      border: 0.5px solid var(--border-2);
+      background: transparent;
+      color: var(--text-2);
+      cursor: pointer;
+      font-family: var(--font);
+      transition: background .12s;
+      white-space: nowrap;
+    }
+
+    .btn:hover {
+      background: var(--bg-2);
+    }
+
+    .main {
+      max-width: 1440px;
+      margin: 0 auto;
+      padding: 1.25rem 1.5rem;
+      display: flex;
+      flex-direction: column;
+      gap: 1rem;
+    }
+
+    .hero {
+      background: var(--bg);
+      border: 0.5px solid var(--border);
+      border-radius: var(--radius-lg);
+      padding: 1rem 1.2rem;
+    }
+
+    .hero-title {
+      font-size: 18px;
+      font-weight: 600;
+      color: var(--text);
+      margin-bottom: 4px;
+    }
+
+    .hero-sub {
+      font-size: 12px;
+      color: var(--text-2);
+      line-height: 1.6;
+    }
+
+    .csv-zone {
+      border: 1.5px dashed var(--border-2);
+      border-radius: var(--radius-lg);
+      padding: 1.25rem 1.5rem;
+      display: flex;
+      align-items: center;
+      gap: 1rem;
+      background: var(--bg);
+      cursor: pointer;
+      transition: border-color .15s, background .15s;
+    }
+
+    .csv-zone:hover,
+    .csv-zone.drag {
+      border-color: var(--text-2);
+      background: var(--bg-2);
+    }
+
+    .csv-zone.loaded {
+      border-style: solid;
+      border-color: #3B6D11;
+    }
+
+    .csv-icon {
+      width: 36px;
+      height: 36px;
+      background: var(--bg-2);
+      border-radius: 8px;
+      display: flex;
+      align-items: center;
+      justify-content: center;
+      flex-shrink: 0;
+    }
+
+    .csv-main {
+      flex: 1;
+      min-width: 0;
+    }
+
+    .csv-title {
+      font-size: 13px;
+      font-weight: 500;
+      color: var(--text);
+      margin-bottom: 2px;
+      overflow: hidden;
+      text-overflow: ellipsis;
+      white-space: nowrap;
+    }
+
+    .csv-sub {
+      font-size: 11px;
+      color: var(--text-3);
+      line-height: 1.6;
+    }
+
+    .csv-sub code {
+      font-family: var(--mono);
+      background: var(--bg-2);
+      padding: 1px 4px;
+      border-radius: 3px;
+      font-size: 10px;
+    }
+
+    .csv-badge {
+      flex-shrink: 0;
+      font-size: 11px;
+      padding: 4px 10px;
+      border-radius: 10px;
+      background: #EAF3DE;
+      color: #27500A;
+      font-weight: 500;
+      display: none;
+    }
+
+    .csv-zone.loaded .csv-badge {
+      display: block;
+    }
+
+    #csv-file {
+      display: none;
+    }
+
+    .summary-grid {
+      display: grid;
+      grid-template-columns: repeat(4, minmax(0, 1fr));
+      gap: 12px;
+    }
+
+    .summary-card {
+      background: var(--bg);
+      border: 0.5px solid var(--border);
+      border-radius: var(--radius-lg);
+      padding: 0.95rem 1rem;
+    }
+
+    .summary-label {
+      font-size: 10px;
+      text-transform: uppercase;
+      letter-spacing: .07em;
+      color: var(--text-3);
+      margin-bottom: 6px;
+      font-weight: 500;
+    }
+
+    .summary-value {
+      font-size: 22px;
+      font-weight: 600;
+      font-family: var(--mono);
+      color: var(--text);
+      line-height: 1.2;
+    }
+
+    .summary-sub {
+      margin-top: 6px;
+      font-size: 11px;
+      color: var(--text-3);
+    }
+
+    .toolbar {
+      display: flex;
+      align-items: center;
+      gap: 8px;
+      flex-wrap: wrap;
+    }
+
+    .search-wrap {
+      flex: 1;
+      min-width: 220px;
+      position: relative;
+    }
+
+    .search-wrap input {
+      width: 100%;
+      padding: 7px 10px 7px 32px;
+      font-size: 13px;
+      border: 0.5px solid var(--border-2);
+      border-radius: var(--radius);
+      background: var(--bg);
+      color: var(--text);
+      font-family: var(--font);
+      outline: none;
+      transition: border-color .15s;
+    }
+
+    .search-wrap input:focus {
+      border-color: var(--text-2);
+    }
+
+    .search-icon {
+      position: absolute;
+      left: 10px;
+      top: 50%;
+      transform: translateY(-50%);
+      width: 14px;
+      height: 14px;
+      opacity: .35;
+      pointer-events: none;
+    }
+
+    .seg-wrap {
+      width: 100%;
+      flex-basis: 100%;
+      overflow-x: auto;
+      flex-shrink: 0;
+      max-width: 100%;
+    }
+
+    .seg {
+      display: flex;
+      border: 0.5px solid var(--border-2);
+      border-radius: var(--radius);
+      overflow: hidden;
+      width: max-content;
+      background: var(--bg);
+    }
+
+    .seg-btn {
+      font-size: 11px;
+      padding: 6px 10px;
+      background: transparent;
+      border: none;
+      border-right: 0.5px solid var(--border-2);
+      color: var(--text-2);
+      cursor: pointer;
+      white-space: nowrap;
+      font-family: var(--font);
+      transition: background .1s;
+    }
+
+    .seg-btn:last-child {
+      border-right: none;
+    }
+
+    .seg-btn.active {
+      background: var(--text);
+      color: var(--bg);
+    }
+
+    .seg-btn:hover:not(.active) {
+      background: var(--bg-2);
+    }
+
+    .sort-select {
+      font-size: 12px;
+      padding: 6px 10px;
+      background: var(--bg);
+      color: var(--text-2);
+      border: 0.5px solid var(--border-2);
+      border-radius: var(--radius);
+      cursor: pointer;
+      font-family: var(--font);
+      outline: none;
+    }
+
+    .body-layout {
+      display: grid;
+      grid-template-columns: minmax(0, 1fr) 380px;
+      gap: 12px;
+      align-items: start;
+    }
+
+    .table-wrap {
+      background: var(--bg);
+      border: 0.5px solid var(--border);
+      border-radius: var(--radius-lg);
+      overflow: hidden;
+    }
+
+    .tbl {
+      width: 100%;
+      border-collapse: collapse;
+      table-layout: fixed;
+    }
+
+    .tbl thead th {
+      font-size: 10px;
+      text-transform: uppercase;
+      letter-spacing: .07em;
+      color: var(--text-3);
+      font-weight: 500;
+      padding: 9px 10px;
+      border-bottom: 0.5px solid var(--border);
+      text-align: left;
+      background: var(--bg-2);
+    }
+
+    .tbl tbody tr {
+      border-bottom: 0.5px solid var(--border);
+      cursor: pointer;
+      transition: background .1s;
+    }
+
+    .tbl tbody tr:last-child {
+      border-bottom: none;
+    }
+
+    .tbl tbody tr:hover {
+      background: var(--bg-2);
+    }
+
+    .tbl tbody tr.selected {
+      background: var(--bg-info);
+    }
+
+    .tbl td {
+      padding: 10px;
+      vertical-align: top;
+    }
+
+    .col-titular {
+      width: auto;
+    }
+
+    .col-tag {
+      width: 120px;
+    }
+
+    .col-small {
+      width: 90px;
+    }
+
+    .col-alerta {
+      width: 95px;
+    }
+
+    .hl-text {
+      font-family: var(--mono);
+      font-size: 11.5px;
+      color: var(--text);
+      line-height: 1.45;
+      display: -webkit-box;
+      -webkit-line-clamp: 2;
+      -webkit-box-orient: vertical;
+      overflow: hidden;
+    }
+
+    .hl-author {
+      font-size: 10px;
+      color: var(--text-3);
+      margin-top: 3px;
+    }
+
+    .sec-badge {
+      font-size: 10px;
+      color: var(--text-2);
+      background: var(--bg-2);
+      padding: 2px 7px;
+      border-radius: 4px;
+      white-space: nowrap;
+      border: 0.5px solid var(--border);
+      display: inline-block;
+    }
+
+    .num {
+      font-family: var(--mono);
+      font-size: 12px;
+      color: var(--text);
+    }
+
+    .emocio-pill {
+      font-size: 10px;
+      font-weight: 500;
+      padding: 3px 8px;
+      border-radius: 10px;
+      white-space: nowrap;
+      display: inline-block;
+    }
+
+    .alert-pill {
+      font-size: 10px;
+      font-weight: 600;
+      padding: 3px 8px;
+      border-radius: 999px;
+      display: inline-block;
+      border: 0.5px solid transparent;
+    }
+
+    .alert-none {
+      background: #EAF3DE;
+      color: #27500A;
+    }
+
+    .alert-baix {
+      background: #F7F0D8;
+      color: #6E5B08;
+    }
+
+    .alert-mitja {
+      background: #FCEBEB;
+      color: #A32D2D;
+    }
+
+    .alert-alt {
+      background: #F7DCDC;
+      color: #7B1818;
+    }
+
+    .empty-rows {
+      text-align: center;
+      padding: 3rem;
+      color: var(--text-3);
+      font-size: 13px;
+    }
+
+    .no-data {
+      display: flex;
+      flex-direction: column;
+      align-items: center;
+      justify-content: center;
+      padding: 3rem 2rem;
+      gap: 10px;
+      color: var(--text-3);
+    }
+
+    .no-data svg {
+      opacity: .2;
+    }
+
+    .no-data p {
+      font-size: 13px;
+      text-align: center;
+      line-height: 1.6;
+    }
+
+    .detail {
+      background: var(--bg);
+      border: 0.5px solid var(--border);
+      border-radius: var(--radius-lg);
+      padding: 1.15rem 1.2rem;
+      position: sticky;
+      top: 68px;
+    }
+
+    .detail-empty {
+      display: flex;
+      flex-direction: column;
+      align-items: center;
+      justify-content: center;
+      min-height: 280px;
+      gap: 10px;
+      color: var(--text-3);
+    }
+
+    .detail-empty svg {
+      opacity: .2;
+    }
+
+    .detail-empty span {
+      font-size: 13px;
+      text-align: center;
+      line-height: 1.5;
+    }
+
+    .d-label {
+      font-size: 10px;
+      text-transform: uppercase;
+      letter-spacing: .07em;
+      color: var(--text-3);
+      margin-bottom: 5px;
+      font-weight: 500;
+    }
+
+    .d-headline {
+      font-family: var(--mono);
+      font-size: 12.5px;
+      color: var(--text);
+      line-height: 1.55;
+      margin-bottom: 4px;
+    }
+
+    .d-meta {
+      font-size: 11px;
+      color: var(--text-3);
+    }
+
+    .d-divider {
+      border: none;
+      border-top: 0.5px solid var(--border);
+      margin: 0.85rem 0;
+    }
+
+    .scores-grid {
+      display: grid;
+      grid-template-columns: repeat(2, minmax(0, 1fr));
+      gap: 8px;
+    }
+
+    .score-card {
+      background: var(--bg-2);
+      border-radius: var(--radius);
+      padding: 8px 10px;
+    }
+
+    .score-card.is-clickable {
+      cursor: pointer;
+      transition: transform .14s ease, box-shadow .14s ease, border-color .14s ease;
+      border: 1px solid transparent;
+    }
+
+    .score-card.is-clickable:hover {
+      transform: translateY(-1px);
+      box-shadow: 0 8px 24px rgba(15, 23, 42, .08);
+      border-color: var(--border);
+    }
+
+    .score-card.active {
+      border-color: #378ADD;
+      box-shadow: 0 0 0 1px rgba(55, 138, 221, .15);
+    }
+
+    .score-lbl {
+      font-size: 10px;
+      color: var(--text-3);
+      margin-bottom: 3px;
+    }
+
+    .score-num {
+      font-size: 18px;
+      font-weight: 600;
+      font-family: var(--mono);
+    }
+
+    .deviation-box {
+      background: var(--bg-2);
+      padding: 10px 11px;
+      border-left: 2px solid #378ADD;
+      border-radius: 0 6px 6px 0;
+    }
+
+    .deviation-text {
+      font-size: 11px;
+      color: var(--text-2);
+      line-height: 1.55;
+    }
+
+    .warn-box {
+      background: var(--bg-warn);
+      padding: 10px 11px;
+      border-left: 2px solid #D9822B;
+      border-radius: 0 6px 6px 0;
+    }
+
+    .alt-headline {
+      background: var(--bg-2);
+      border-radius: var(--radius);
+      padding: 10px 11px;
+      font-family: var(--mono);
+      font-size: 11.5px;
+      line-height: 1.55;
+    }
+
+    .detail {
+      max-height: calc(100vh - 84px);
+      overflow-y: auto;
+      min-width: 0;
+    }
+
+    .toolbar-note {
+      font-size: 11px;
+      color: var(--text-3);
+      margin-top: -4px;
+    }
+
+    .chips-wrap {
+      display: flex;
+      flex-wrap: wrap;
+      gap: 6px;
+      margin-top: 8px;
+    }
+
+    .emotion-chip {
+      font-size: 10px;
+      font-weight: 500;
+      padding: 4px 8px;
+      border-radius: 999px;
+      white-space: nowrap;
+      border: 0.5px solid var(--border);
+    }
+
+    .muted-note {
+      font-size: 11px;
+      color: var(--text-3);
+      line-height: 1.5;
+      margin-top: 8px;
+    }
+
+    .emotions-col .chips-wrap {
+      gap: 4px;
+      align-items: flex-start;
+    }
+
+    .emotions-col .emotion-chip {
+      font-size: 10px;
+      padding: 2px 6px;
+      max-width: 100%;
+    }
+
+    .emotions-col .muted-note {
+      font-size: 10px;
+      margin-top: 0;
+    }
+
+
+    @media (max-width: 1100px) {
+      .summary-grid {
+        grid-template-columns: repeat(2, minmax(0, 1fr));
+      }
+
+      .body-layout {
+        grid-template-columns: 1fr;
+      }
+
+      .detail {
+        position: static;
+      }
+    }
+
+    @media (max-width: 760px) {
+      .summary-grid {
+        grid-template-columns: 1fr;
+      }
+
+      .col-small {
+        display: none;
+      }
+
+      .col-alerta {
+        width: 85px;
+      }
+    }
+
+    @media (max-width: 600px) {
+
+      .nav-sub,
+      .nav-meta {
+        display: none;
+      }
+    }
+  </style>
+</head>
+
+<body>
+
+  <nav class="nav">
+    <div class="nav-brand">
+      <div class="nav-logo">
+        <svg width="14" height="14" viewBox="0 0 16 16" fill="none" stroke="currentColor" stroke-width="1.8">
+          <rect x="1" y="2" width="14" height="12" rx="2" />
+          <line x1="1" y1="6" x2="15" y2="6" />
+          <line x1="5" y1="10" x2="11" y2="10" />
+        </svg>
+      </div>
+      <div>
+        <div class="nav-title">Observatori d'anàlisi editorial</div>
+        <div class="nav-sub">Càtedra UB d'IA i Mitjans · Resultats de titulars analitzats</div>
+      </div>
+    </div>
+  </nav>
+
+  <div class="main">
+
+    <div class="csv-zone" id="csv-zone" onclick="document.getElementById('csv-file').click()"
+      ondragover="event.preventDefault();this.classList.add('drag')" ondragleave="this.classList.remove('drag')"
+      ondrop="event.preventDefault();this.classList.remove('drag');loadCSVFile(event.dataTransfer.files[0])">
+      <div class="csv-icon">
+        <svg width="18" height="18" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.6">
+          <path d="M14 2H6a2 2 0 00-2 2v16a2 2 0 002 2h12a2 2 0 002-2V8z" />
+          <polyline points="14 2 14 8 20 8" />
+          <line x1="12" y1="18" x2="12" y2="12" />
+          <polyline points="9 15 12 12 15 15" />
+        </svg>
+      </div>
+      <div class="csv-main">
+        <div class="csv-title" id="csv-title">Carrega un fitxer CSV de presentació</div>
+        <div class="csv-sub">
+          Arrossega aquí o fes clic.
+        </div>
+      </div>
+      <span class="csv-badge" id="csv-badge">0 titulars</span>
+    </div>
+    <input type="file" id="csv-file" accept=".csv,text/csv" onchange="loadCSVFile(this.files[0])">
+
+    <div class="summary-grid" id="summary-grid">
+      <div class="summary-card">
+        <div class="summary-label">Mostra carregada</div>
+        <div class="summary-value">—</div>
+        <div class="summary-sub">Encara no hi ha dades.</div>
+      </div>
+      <div class="summary-card">
+        <div class="summary-label">Alertes editorials</div>
+        <div class="summary-value">—</div>
+        <div class="summary-sub">Encara no hi ha dades.</div>
+      </div>
+    </div>
+
+    <div class="toolbar">
+      <div class="search-wrap">
+        <svg class="search-icon" viewBox="0 0 16 16" fill="none" stroke="currentColor" stroke-width="1.5">
+          <circle cx="6.5" cy="6.5" r="4" />
+          <line x1="10" y1="10" x2="14" y2="14" />
+        </svg>
+        <input type="text" id="search-input" placeholder="Cerca titular, autor, tag o explicació..." oninput="render()">
+      </div>
+      <select class="sort-select" id="sort-sel" onchange="render()">
+        <option value="date_desc">Ordenar per data (més recent)</option>
+        <option value="alert">Ordenar per nivell d'alerta</option>
+        <option value="emocio">Ordenar per emoció</option>
+        <option value="tag">Ordenar per tag</option>
+      </select>
+      <div class="seg-wrap">
+        <div class="seg" id="seg"></div>
+      </div>
+    </div>
+    <div class="toolbar-note" id="toolbar-note">Els botons filtren per <code>tag</code>. El camp de cerca busca dins titular, autor, tag i explicacions.</div>
+
+    <div class="body-layout">
+      <div class="table-wrap">
+        <table class="tbl">
+          <thead>
+            <tr>
+              <th class="col-titular">Titular</th>
+              <th class="col-tag">Tag</th>
+              <th class="col-small">Activació</th>
+              <th class="col-small">València</th>
+              <th class="col-small">Emocions</th>
+              <th class="col-alerta">Alerta</th>
+            </tr>
+          </thead>
+          <tbody id="tbody">
+            <tr>
+              <td colspan="6">
+                <div class="no-data">
+                  <svg width="40" height="40" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.2">
+                    <path d="M14 2H6a2 2 0 00-2 2v16a2 2 0 002 2h12a2 2 0 002-2V8z" />
+                    <polyline points="14 2 14 8 20 8" />
+                  </svg>
+                  <p>Carrega un fitxer CSV per veure els resultats de l’anàlisi.</p>
+                </div>
+              </td>
+            </tr>
+          </tbody>
+        </table>
+      </div>
+
+      <div class="detail" id="detail">
+        <div class="detail-empty">
+          <svg width="36" height="36" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.2">
+            <rect x="3" y="3" width="18" height="18" rx="2" />
+            <line x1="3" y1="9" x2="21" y2="9" />
+            <line x1="9" y1="21" x2="9" y2="9" />
+          </svg>
+          <span>Fes clic a qualsevol titular per veure la fitxa editorial completa</span>
+        </div>
+      </div>
+    </div>
+
+  </div>
+
+  <script>
+    const TAGS_DEFAULT = ['Tots'];
+
+    const EMOCIO_STYLE = {
+      'neutral': { bg: '#F1EFE8', color: '#444441' },
+      'neutralitat': { bg: '#F1EFE8', color: '#444441' },
+      'alegria': { bg: '#EAF3DE', color: '#27500A' },
+      'tristesa': { bg: '#E6F1FB', color: '#0C447C' },
+      'ràbia': { bg: '#FCEBEB', color: '#A32D2D' },
+      'rabia': { bg: '#FCEBEB', color: '#A32D2D' },
+      'sorpresa': { bg: '#EEEDFE', color: '#3C3489' },
+      'por': { bg: '#FFF4EA', color: '#9C5A15' },
+      'fàstic': { bg: '#F7F0D8', color: '#6E5B08' },
+      'fastic': { bg: '#F7F0D8', color: '#6E5B08' },
+      'esperança': { bg: '#E7F6EE', color: '#18603A' },
+      'esperanca': { bg: '#E7F6EE', color: '#18603A' },
+    };
+
+    const EMOCIO_NORM = {
+      'neutral': 'neutralitat',
+      'neutralitat': 'neutralitat',
+      'alegria': 'alegria',
+      'joy': 'alegria',
+      'felicitat': 'alegria',
+      'tristesa': 'tristesa',
+      'sadness': 'tristesa',
+      'ràbia': 'ràbia',
+      'rabia': 'ràbia',
+      'ira': 'ràbia',
+      'anger': 'ràbia',
+      'sorpresa': 'sorpresa',
+      'surprise': 'sorpresa',
+      'por': 'por',
+      'miedo': 'por',
+      'fear': 'por',
+      'fàstic': 'fàstic',
+      'fastic': 'fàstic',
+      'esperança': 'esperança',
+      'esperanca': 'esperança',
+      'hope': 'esperança'
+    };
+
+    let DATA = [];
+    let selected = null;
+    let filterTag = 'Tots';
+    let TAGS_ACTIUS = [];
+    let activeMetricDetail = { id: null, type: null };
+
+    function esc(s) {
+      return String(s || '')
+        .replace(/&/g, '&amp;')
+        .replace(/</g, '&lt;')
+        .replace(/>/g, '&gt;')
+        .replace(/"/g, '&quot;');
+    }
+
+    function decodeHTMLEntities(s) {
+      const el = document.createElement('textarea');
+      el.innerHTML = String(s || '');
+      return el.value.replace(/\u200b/g, '').trim();
+    }
+
+    function parseBool(v) {
+      const t = String(v ?? '').trim().toLowerCase();
+      return ['true', '1', 'sí', 'si', 'yes'].includes(t);
+    }
+
+    function toNum(v, fb = 0) {
+      const n = parseFloat(String(v ?? '').replace(',', '.'));
+      return Number.isFinite(n) ? n : fb;
+    }
+
+    function normalizeText(v) {
+      return String(v || '')
+        .normalize('NFD')
+        .replace(/[\u0300-\u036f]/g, '')
+        .toLowerCase()
+        .trim();
+    }
+
+    function normalizeTagByAuthor(tag, autor) {
+      const rawTag = String(tag || '').trim();
+      return rawTag || 'Sense tag';
+    }
+
+    function parseEmotionSummary(v) {
+      const raw = String(v || '').trim();
+      if (!raw) return [];
+      return raw
+        .split(/\s*[·|]\s*/g)
+        .map(part => part.trim())
+        .filter(Boolean)
+        .map(part => {
+          const [emotionRaw, intensityRaw] = part.split(':').map(x => String(x || '').trim());
+          return {
+            emotion: normalizeEmotion(emotionRaw || part),
+            intensity: intensityRaw || ''
+          };
+        });
+    }
+
+    function emotionStyle(emotion) {
+      return EMOCIO_STYLE[emotion] || { bg: 'var(--bg-2)', color: 'var(--text-2)' };
+    }
+
+
+    function normalizeEmotion(v) {
+      const raw = String(v || 'neutralitat').trim().toLowerCase().normalize('NFC');
+      return EMOCIO_NORM[raw] || raw || 'neutralitat';
+    }
+
+    function normalizeAlertLevel(v, problematic) {
+      const raw = String(v || '').trim().toLowerCase().normalize('NFC');
+      if (!problematic) return 'cap';
+      if (['alt', 'alta', 'high'].includes(raw)) return 'alt';
+      if (['mitja', 'mitjà', 'mig', 'medio', 'medium'].includes(raw)) return 'mitjà';
+      if (['baix', 'baixa', 'low'].includes(raw)) return 'baix';
+      return 'baix';
+    }
+
+    function alertClass(level) {
+      if (level === 'alt') return 'alert-alt';
+      if (level === 'mitjà') return 'alert-mitja';
+      if (level === 'baix') return 'alert-baix';
+      return 'alert-none';
+    }
+
+    function alertLabel(level) {
+      if (level === 'cap') return 'No alerta';
+      if (level === 'mitjà') return 'Alerta mitjana';
+      if (level === 'alt') return 'Alerta';
+      return 'No alerta';
+    }
+
+    function alertRank(level) {
+      if (level === 'alt') return 3;
+      if (level === 'mitjà') return 2;
+      if (level === 'baix') return 1;
+      return 0;
+    }
+    function parseDateValue(v) {
+      const str = String(v || '').trim();
+      if (!str) return null;
+
+      if (/^\d{2}-\d{2}-\d{4}$/.test(str)) {
+        const [dd, mm, yyyy] = str.split('-');
+        return new Date(`${yyyy}-${mm}-${dd}T00:00:00`);
+      }
+
+      if (/^\d{2}\/\d{2}\/\d{4}$/.test(str)) {
+        const [dd, mm, yyyy] = str.split('/');
+        return new Date(`${yyyy}-${mm}-${dd}T00:00:00`);
+      }
+
+      const d = new Date(str);
+      return isNaN(d.getTime()) ? null : d;
+    }
+
+    function formatDateForMeta(v) {
+      const d = parseDateValue(v);
+      if (!d) return String(v || '—');
+      const dd = String(d.getDate()).padStart(2, '0');
+      const mm = String(d.getMonth() + 1).padStart(2, '0');
+      const yyyy = d.getFullYear();
+      return `${dd}-${mm}-${yyyy}`;
+    }
+
+    function loadCSVFile(file) {
+      if (!file) return;
+      const reader = new FileReader();
+      reader.onload = e => parseCSV(e.target.result, file.name);
+      reader.onerror = () => alert('Error llegint el fitxer.');
+      reader.readAsText(file, 'UTF-8');
+    }
+
+    function parseCSVLine(line, delimiter = ',') {
+      const cols = [];
+      let cur = '';
+      let inQ = false;
+
+      for (let i = 0; i < line.length; i++) {
+        const c = line[i];
+        if (c === '"') {
+          if (inQ && line[i + 1] === '"') { cur += '"'; i++; }
+          else inQ = !inQ;
+        } else if (c === delimiter && !inQ) {
+          cols.push(cur);
+          cur = '';
+        } else {
+          cur += c;
+        }
+      }
+      cols.push(cur);
+      return cols;
+    }
+
+    function parseCSVRows(text) {
+      const normalized = String(text || '')
+        .replace(/\r\n/g, '\n')
+        .replace(/\r/g, '\n')
+        .replace(/^\uFEFF/, '');
+
+      const rows = [];
+      let cur = '';
+      let inQ = false;
+
+      for (let i = 0; i < normalized.length; i++) {
+        const c = normalized[i];
+
+        if (c === '"') {
+          if (inQ && normalized[i + 1] === '"') {
+            cur += '""';
+            i++;
+          } else {
+            inQ = !inQ;
+            cur += c;
+          }
+        } else if (c === '\n' && !inQ) {
+          rows.push(cur);
+          cur = '';
+        } else {
+          cur += c;
+        }
+      }
+
+      if (cur.trim() || normalized.endsWith('\n')) rows.push(cur);
+      return rows.filter(r => r.length > 0);
+    }
+
+    function parseCSV(text, filename) {
+      const rows = parseCSVRows(text);
+      if (rows.length < 2) {
+        alert('El fitxer CSV sembla buit.');
+        return;
+      }
+
+      const headers = parseCSVLine(rows[0].replace(/^﻿/, '')).map(h => h.trim().toLowerCase());
+
+      function findCol(...names) {
+        for (const n of names) {
+          const i = headers.findIndex(h => h === n || h.includes(n));
+          if (i >= 0) return i;
+        }
+        return -1;
+      }
+
+      const idx = {
+        id: findCol('id'),
+        titular: findCol('titular', 'headline', 'titol', 'títol'),
+        data: findCol('data', 'date'),
+        autor: findCol('autor', 'author', 'redactor', 'periodista'),
+        tag: findCol('tag'),
+        tagJust: findCol('tag_justificacio', 'tag just', 'justificacio', 'justificación'),
+        emocio: findCol('emocio_principal', 'emoció_principal', 'emotion'),
+        emocionsResum: findCol('emocions_resum', 'emocions resum'),
+        arousal: findCol('activacio_label', 'arousal_label', 'activacio', 'arousal'),
+        valencia: findCol('valencia_label', 'valència_label', 'valencia'),
+        problematicTrigger: findCol('problematic_trigger', 'trigger'),
+        problematicNivell: findCol('problematic_nivell', 'nivell'),
+        problematicTipus: findCol('problematic_tipus', 'tipus'),
+        problematicExp: findCol('problematic_explicacio', 'explicacio'),
+        titularAlternatiu: findCol('titular_alternatiu', 'alternatiu'),
+      };
+
+      const parsed = [];
+
+      for (let i = 1; i < rows.length; i++) {
+        const line = rows[i];
+        if (!line.trim()) continue;
+        const cols = parseCSVLine(line);
+
+        const get = (k, fb = '') =>
+          (idx[k] >= 0 && cols[idx[k]] !== undefined) ? cols[idx[k]].trim() : fb;
+
+        const problematic = parseBool(get('problematicTrigger', 'false'));
+        const rawTag = decodeHTMLEntities(get('tag', 'Sense tag')) || 'Sense tag';
+        const itemDate = get('data', '');
+
+        parsed.push({
+          id: parseInt(get('id', i), 10) || i,
+          hl: decodeHTMLEntities(get('titular', '(sense titular)')),
+          data: itemDate,
+          dataObj: parseDateValue(itemDate),
+          autor: decodeHTMLEntities(get('autor', '—')),
+          tagOriginal: rawTag,
+          tag: rawTag,
+          tagAdjustedByAuthor: false,
+          tagJust: '',
+          emocio: normalizeEmotion(get('emocio', 'neutralitat')),
+          emocionsResum: get('emocionsResum', ''),
+          arousal: get('arousal', '—'),
+          valenciaLabel: get('valencia', '—'),
+          problematic,
+          problematicNivell: normalizeAlertLevel(get('problematicNivell', ''), problematic),
+          problematicTipus: decodeHTMLEntities(get('problematicTipus', '')),
+          problematicExplicacio: decodeHTMLEntities(get('problematicExp', '')),
+          titularAlternatiu: decodeHTMLEntities(get('titularAlternatiu', '')),
+        });
+      }
+
+      const filtered = parsed.filter(d => !['expertesa (altres)', 'veus ocasionals'].includes(normalizeText(d.tag)));
+
+      if (!filtered.length) {
+        alert("No s'ha pogut llegir cap fila del CSV després d'aplicar els filtres. Comprova el format.");
+        return;
+      }
+
+      DATA = filtered;
+      selected = null;
+
+      const zone = document.getElementById('csv-zone');
+      zone.classList.add('loaded');
+      document.getElementById('csv-title').textContent = filename;
+      document.getElementById('csv-badge').textContent = `${DATA.length} titular${DATA.length !== 1 ? 's' : ''} carregat${DATA.length !== 1 ? 's' : ''}`;
+
+      buildTagFilter();
+      resetDetail();
+      render();
+    }
+
+    function buildTagFilter() {
+      const excludedTags = new Set(['alberto alcántara', 'alberto alcantara', 'redacció', 'redaccio', 'expertesa (altres)', 'veus ocasionals']);
+      TAGS_ACTIUS = ['Tots', ...new Set(DATA.map(d => d.tag).filter(Boolean).filter(tag => !excludedTags.has(normalizeText(tag))).sort((a, b) => a.localeCompare(b, 'ca')))];
+      filterTag = 'Tots';
+      document.getElementById('seg').innerHTML = TAGS_ACTIUS.map((s, i) =>
+        `<button class="seg-btn${i === 0 ? ' active' : ''}" onclick="setTag(${i}, this)">${esc(s)}</button>`
+      ).join('');
+    }
+
+    function init() {
+      TAGS_ACTIUS = TAGS_DEFAULT.slice();
+      document.getElementById('seg').innerHTML = TAGS_DEFAULT.map((s, i) =>
+        `<button class="seg-btn${i === 0 ? ' active' : ''}" onclick="setTag(${i}, this)">${esc(s)}</button>`
+      ).join('');
+    }
+
+    function setTag(idx, btn) {
+      filterTag = TAGS_ACTIUS[idx] || 'Tots';
+      document.querySelectorAll('.seg-btn').forEach(b => b.classList.remove('active'));
+      btn.classList.add('active');
+      render();
+    }
+
+
+    function mostFrequent(arr) {
+      const freq = {};
+      for (const x of arr) {
+        const k = String(x || '').trim();
+        if (!k) continue;
+        freq[k] = (freq[k] || 0) + 1;
+      }
+      return Object.keys(freq).sort((a, b) => freq[b] - freq[a])[0] || '—';
+    }
+
+    function renderSummary(rows) {
+      const total = rows.length;
+      const alertes = rows.filter(r => r.problematicNivell === 'alt').length;
+      const pct = total ? Math.round((alertes / total) * 100) : 0;
+
+      const dates = rows.map(r => r.dataObj).filter(Boolean).sort((a, b) => a - b);
+      let periodSub = 'Període no disponible';
+      if (dates.length) {
+        const start = `${String(dates[0].getDate()).padStart(2, '0')}-${String(dates[0].getMonth() + 1).padStart(2, '0')}-${dates[0].getFullYear()}`;
+        const end = `${String(dates[dates.length - 1].getDate()).padStart(2, '0')}-${String(dates[dates.length - 1].getMonth() + 1).padStart(2, '0')}-${dates[dates.length - 1].getFullYear()}`;
+        periodSub = `${start} → ${end}`;
+      }
+
+      document.getElementById('summary-grid').innerHTML = `
+    <div class="summary-card">
+      <div class="summary-label">Notícies analitzades</div>
+      <div class="summary-value">${total}</div>
+      <div class="summary-sub">${periodSub}</div>
+    </div>
+    <div class="summary-card">
+      <div class="summary-label">Alertes editorials</div>
+      <div class="summary-value">${pct}%</div>
+      <div class="summary-sub">${alertes} titular${alertes !== 1 ? 's' : ''} amb etiqueta d'alerta</div>
+    </div>
+  `;
+    }
+
+    function render() {
+      if (!DATA.length) return;
+
+      const q = normalizeText(document.getElementById('search-input').value);
+      const sort = document.getElementById('sort-sel').value;
+
+      let rows = DATA.filter(d => {
+        const matchTag = filterTag === 'Tots' || d.tag === filterTag;
+        const fullText = normalizeText([
+          d.hl, d.autor, d.tag, d.tagOriginal, d.tagJust, d.emocionsResum,
+          d.problematicTipus, d.problematicExplicacio, d.titularAlternatiu
+        ].join(' '));
+        const matchQ = !q || fullText.includes(q);
+        return matchTag && matchQ;
+      });
+
+      const emOrd = {
+        'ràbia': 0,
+        'por': 1,
+        'tristesa': 2,
+        'sorpresa': 3,
+        'neutralitat': 4,
+        'alegria': 5,
+        'fàstic': 6
+      };
+
+      rows.sort((a, b) => {
+        if (sort === 'date_desc') return (b.dataObj?.getTime?.() || 0) - (a.dataObj?.getTime?.() || 0);
+        if (sort === 'alert') return alertRank(b.problematicNivell) - alertRank(a.problematicNivell);
+        if (sort === 'emocio') return (emOrd[a.emocio] ?? 99) - (emOrd[b.emocio] ?? 99);
+        if (sort === 'tag') return a.tag.localeCompare(b.tag, 'ca');
+        return 0;
+      });
+
+      renderSummary(rows);
+
+      document.getElementById('toolbar-note').innerHTML = `Els botons filtren per <code>tag</code>. La taula mostra només les emocions presents, sense intensitat.`;
+
+      const tbody = document.getElementById('tbody');
+
+      if (!rows.length) {
+        tbody.innerHTML = '<tr><td colspan="6" class="empty-rows">Cap titular coincideix amb la cerca o el filtre seleccionat.</td></tr>';
+        return;
+      }
+
+      tbody.innerHTML = rows.map(d => {
+        const emotionsCell = emotionChipsHTML(d.emocionsResum, 'Sense emocions desglossades', false);
+        return `
+      <tr onclick="selectRow(${d.id})" id="row-${d.id}" class="${selected === d.id ? 'selected' : ''}">
+        <td class="col-titular">
+          <div class="hl-text">${esc(d.hl)}</div>
+          <div class="hl-author">${esc(d.autor)}${d.data ? ' · ' + esc(formatDateForMeta(d.data)) : ''}</div>
+        </td>
+        <td class="col-tag"><span class="sec-badge">${esc(d.tag)}</span></td>
+        <td class="col-small"><span class="num">${esc(d.arousal || '—')}</span></td>
+        <td class="col-small"><span class="num">${esc(d.valenciaLabel || '—')}</span></td>
+        <td class="col-small emotions-col">${emotionsCell}</td>
+        <td class="col-alerta">
+          <span class="alert-pill ${alertClass(d.problematicNivell)}">${esc(alertLabel(d.problematicNivell))}</span>
+        </td>
+      </tr>
+    `;
+      }).join('');
+    }
+
+
+    function emotionChipsHTML(summary, emptyText = 'No hi ha desglossament addicional d’emocions per a aquest titular.', includeIntensity = true) {
+      const emotions = parseEmotionSummary(summary);
+      if (!emotions.length) return `<div class="muted-note">${esc(emptyText)}</div>`;
+      const seen = new Set();
+      const items = emotions.filter(item => {
+        const key = normalizeText(item.emotion);
+        if (!key) return false;
+        if (seen.has(key)) return false;
+        seen.add(key);
+        return true;
+      });
+      if (!items.length) return '';
+      return `<div class="chips-wrap">${items.map(item => {
+        const style = emotionStyle(item.emotion);
+        const label = includeIntensity && item.intensity ? `${item.emotion} · ${item.intensity}` : item.emotion;
+        return `<span class="emotion-chip" style="background:${style.bg};color:${style.color};">${esc(label)}</span>`;
+      }).join('')}</div>`;
+    }
+
+    function arousalExplanation(label) {
+      const raw = normalizeText(label);
+      if (!raw) return 'No hi ha justificació disponible per a l’activació d’aquest titular.';
+      if (raw.includes('alt')) return 'Activació alt: el titular projecta molta activació, urgència o intensitat emocional. Sol passar quan hi ha conflicte, sorpresa, tensió o una formulació molt impactant.';
+      if (raw.includes('baix')) return 'Activació baix: el titular transmet poca activació emocional. El to acostuma a ser més descriptiu, reposat o informatiu, sense pressió narrativa marcada.';
+      if (raw.includes('mitj')) return 'Activació mitjà: el titular manté un nivell intermedi d’activació. Hi ha interès o tensió moderada, però sense arribar a un registre extrem.';
+      return `Activació ${label}: el nivell d’activació s’ha interpretat a partir del to general del titular i de la seva càrrega expressiva.`;
+    }
+
+    function valenciaExplanation(label) {
+      const raw = normalizeText(label);
+      if (!raw) return 'No hi ha justificació disponible per a la valència d’aquest titular.';
+      if (raw.includes('posit')) return 'València positiva: el titular s’associa a un impacte emocional favorable, constructiu o celebratiu en la lectura global.';
+      if (raw.includes('neg')) return 'València negativa: el titular apunta cap a una lectura desfavorable, conflictiva, alarmant o problemàtica.';
+      if (raw.includes('neutr')) return 'València neutra: el titular es manté en un terreny principalment informatiu, sense una orientació emocional clara ni positiva ni negativa.';
+      if (raw.includes('mixt')) return 'València mixta: el titular combina elements positius i negatius o bé genera una lectura emocional ambivalent.';
+      return `València ${label}: l’etiqueta resumeix la polaritat emocional dominant percebuda en el titular.`;
+    }
+
+    function metricDetailHTML(type, value) {
+      const safeValue = esc(value || '—');
+      if (type === 'arousal') {
+        return `
+          <div class="d-label">Justificació de l’activació</div>
+          <div class="deviation-box"><p class="deviation-text"><strong>${safeValue}</strong> · ${esc(arousalExplanation(value))}</p></div>
+        `;
+      }
+      if (type === 'valencia') {
+        return `
+          <div class="d-label">Justificació de la valència</div>
+          <div class="deviation-box"><p class="deviation-text"><strong>${safeValue}</strong> · ${esc(valenciaExplanation(value))}</p></div>
+        `;
+      }
+      return '<div class="muted-note">Fes clic sobre Activació o València per veure’n la justificació.</div>';
+    }
+
+    function showMetricDetail(type, id) {
+      const d = DATA.find(x => x.id === id);
+      if (!d) return;
+      const box = document.getElementById(`metric-detail-${id}`);
+      const isSameOpen = activeMetricDetail.id === id && activeMetricDetail.type === type;
+      document.querySelectorAll('#detail .score-card.is-clickable').forEach(el => el.classList.remove('active'));
+      if (isSameOpen) {
+        activeMetricDetail = { id: null, type: null };
+        if (box) box.innerHTML = '<div class="muted-note">Fes clic sobre Activació o València per veure’n la justificació.</div>';
+        return;
+      }
+      activeMetricDetail = { id, type };
+      const activeCard = document.getElementById(`metric-${type}-${id}`);
+      if (activeCard) activeCard.classList.add('active');
+      if (box) box.innerHTML = metricDetailHTML(type, type === 'arousal' ? d.arousal : d.valenciaLabel);
+    }
+
+    function selectRow(id) {
+      selected = id;
+      render();
+
+      const d = DATA.find(x => x.id === id);
+      if (!d) return;
+
+      activeMetricDetail = { id: null, type: null };
+      const det = document.getElementById('detail');
+      const allEmotionChips = emotionChipsHTML(d.emocionsResum, 'No hi ha desglossament addicional d’emocions per a aquest titular.', true);
+
+      det.innerHTML = `
+    <div style="margin-bottom:.9rem;">
+      <div class="d-label">Titular analitzat</div>
+      <div class="d-headline">${esc(d.hl)}</div>
+      <div class="d-meta">${esc(d.autor)}${d.data ? ' · ' + esc(formatDateForMeta(d.data)) : ''}</div>
+    </div>
+
+    <hr class="d-divider">
+
+    <div style="margin-bottom:.9rem;">
+      <div class="d-label">Classificació temàtica</div>
+      <div class="d-headline" style="font-size:12px;">${esc(d.tag)}</div>
+    </div>
+
+    <hr class="d-divider">
+
+    <div style="margin-bottom:.9rem;">
+      <div class="d-label">Emocions detectades</div>
+      ${allEmotionChips}
+    </div>
+
+    <hr class="d-divider">
+
+    <div style="margin-bottom:.9rem;">
+      <div class="d-label">Indicadors afectius</div>
+      <div class="scores-grid">
+        <div class="score-card is-clickable" id="metric-arousal-${d.id}" onclick="showMetricDetail('arousal', ${d.id})">
+          <div class="score-lbl">Activació</div>
+          <div class="score-num" style="font-size:16px;">${esc(d.arousal || '—')}</div>
+        </div>
+        <div class="score-card is-clickable" id="metric-valencia-${d.id}" onclick="showMetricDetail('valencia', ${d.id})">
+          <div class="score-lbl">València</div>
+          <div class="score-num" style="font-size:16px;">${esc(d.valenciaLabel || '—')}</div>
+        </div>
+      </div>
+      <div id="metric-detail-${d.id}" style="margin-top:10px;">
+        <div class="muted-note">Fes clic sobre Activació o València per veure’n la justificació.</div>
+      </div>
+    </div>
+
+    <hr class="d-divider">
+
+    <div style="margin-bottom:.9rem;">
+      <div class="d-label">Diagnòstic editorial</div>
+      <div style="margin-bottom:8px;">
+        <span class="alert-pill ${alertClass(d.problematicNivell)}">${esc(alertLabel(d.problematicNivell))}</span>
+      </div>
+
+      ${d.problematicTipus ? `
+        <div style="margin-top:8px;">
+          <div class="d-label">Tipologia detectada</div>
+          <div class="deviation-box"><p class="deviation-text">${esc(d.problematicTipus)}</p></div>
+        </div>
+      ` : ''}
+
+      ${d.problematicExplicacio ? `
+        <div style="margin-top:10px;">
+          <div class="d-label">Explicació</div>
+          <div class="warn-box"><p class="deviation-text">${esc(d.problematicExplicacio)}</p></div>
+        </div>
+      ` : !d.problematic ? `
+        <div class="deviation-box"><p class="deviation-text">No s'ha detectat una alerta editorial rellevant per a aquest titular.</p></div>
+      ` : ''}
+    </div>
+
+    ${d.titularAlternatiu ? `
+      <hr class="d-divider">
+      <div>
+        <div class="d-label">Titular alternatiu proposat</div>
+        <div class="alt-headline">${esc(d.titularAlternatiu)}</div>
+      </div>
+    ` : ''}
+  `;
+    }
+
+    function resetDetail() {
+      document.getElementById('detail').innerHTML = `
+    <div class="detail-empty">
+      <svg width="36" height="36" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.2">
+        <rect x="3" y="3" width="18" height="18" rx="2"/>
+        <line x1="3" y1="9" x2="21" y2="9"/>
+        <line x1="9" y1="21" x2="9" y2="9"/>
+      </svg>
+      <span>Fes clic a qualsevol titular per veure la fitxa editorial completa</span>
+    </div>`;
+    }
+
+    function exportCSV() {
+      if (!DATA.length) {
+        alert('No hi ha dades per exportar.');
+        return;
+      }
+
+      const headers = [
+        'id', 'titular', 'data', 'autor', 'tag', 'tag_justificacio',
+        'emocio_principal', 'emocions_resum', 'activacio_label', 'valencia_label',
+        'problematic_trigger', 'problematic_nivell',
+        'problematic_tipus', 'problematic_explicacio', 'titular_alternatiu'
+      ];
+
+      const rows = DATA.map(d => ([
+        d.id,
+        `"${String(d.hl || '').replace(/"/g, '""')}"`,
+        d.data,
+        `"${String(d.autor || '').replace(/"/g, '""')}"`,
+        `"${String(d.tag || '').replace(/"/g, '""')}"`,
+        `"${String(d.tagJust || '').replace(/"/g, '""')}"`,
+        `"${String(d.emocio || '').replace(/"/g, '""')}"`,
+        `"${String(d.emocionsResum || '').replace(/"/g, '""')}"`,
+        `"${String(d.arousal || '').replace(/"/g, '""')}"`,
+        `"${String(d.valenciaLabel || '').replace(/"/g, '""')}"`,
+        d.problematic ? 'true' : 'false',
+        `"${String(d.problematicNivell || '').replace(/"/g, '""')}"`,
+        `"${String(d.problematicTipus || '').replace(/"/g, '""')}"`,
+        `"${String(d.problematicExplicacio || '').replace(/"/g, '""')}"`,
+        `"${String(d.titularAlternatiu || '').replace(/"/g, '""')}"`
+      ].join(',')));
+
+      const a = document.createElement('a');
+      a.href = 'data:text/csv;charset=utf-8,' + encodeURIComponent('\uFEFF' + [headers.join(','), ...rows].join('\n'));
+      a.download = 'observatori_titulars_presentacio_' + new Date().toISOString().slice(0, 10) + '.csv';
+      a.click();
+    }
+
+    init();
+  </script>
+</body>
+
+</html>
