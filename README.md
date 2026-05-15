@@ -1,1 +1,1 @@
-# titulars.github.io
+# datascienceub.github.io/titulars
