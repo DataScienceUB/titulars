@@ -1,5 +1,5 @@
 # datascienceub.github.io/titulars
 
-![image](yellow.png) – 
+![image](yellow.png)
 
 
